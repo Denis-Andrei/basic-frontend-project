@@ -34,6 +34,8 @@ class HomeController @Inject()(ws: WSClient, val controllerComponents: Controlle
       Ok(views.html.index())
 
     }
+
+
     def vehicle(vehicleName: String) = Action.async { implicit request: Request[AnyContent] =>
 
       val futureResult = ws.url(s"http://localhost:9001/checkVehicle/${vehicleName}").get()
@@ -46,17 +48,6 @@ class HomeController @Inject()(ws: WSClient, val controllerComponents: Controlle
         case _ => NotFound
       }
     }
-
-
-
-
-
-//  def string(element: String) = Action { implicit request: Request[AnyContent] =>
-//
-//    Ok(views.html.text(element))
-//
-//  }
-
 
 }
 
