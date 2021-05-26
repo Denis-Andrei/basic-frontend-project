@@ -1,21 +1,27 @@
 package controllers
 
-import org.scalatestplus.easymock.EasyMockSugar.mock
+import org.mockito.ArgumentMatchers
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.when
+import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerTest
-import play.api.http.Status.OK
-import play.api.libs.ws.{WSClient, WSResponse}
+import play.api.http.Status.{NOT_FOUND, OK}
+import play.api.libs.json.{JsObject, Json}
+import play.api.libs.ws.{BodyWritable, WSClient, WSRequest, WSResponse}
 import play.api.test.Helpers.{GET, POST, contentAsString, contentType, defaultAwaitTimeout, status, stubControllerComponents}
 import play.api.test.{FakeRequest, Injecting}
 
-import scala.Option.when
 import scala.concurrent.{ExecutionContext, Future}
 
 class FormControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting {
   implicit lazy val executionContext: ExecutionContext = app.injector.instanceOf[ExecutionContext]
   lazy val ws: WSClient = app.injector.instanceOf[WSClient]
-  lazy val wsMock = mock[WSClient]
-  lazy val wsMockResponse = mock[WSResponse]
+
+  lazy val wsMock: WSClient = mock[WSClient]
+  lazy val wsRequest: WSRequest = mock[WSRequest]
+  lazy val wsResponse: WSResponse = mock[WSResponse]
+
 
 
   "FormController GET" should {
@@ -42,14 +48,45 @@ class FormControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting
   "FormController POST " should {
 
     "render the simpleFormPost page from a new instance of controller" in {
-      val controller = new FormController(ws, stubControllerComponents(), executionContext)
-      val simpleForm = controller.simpleFormPost().apply(FakeRequest(POST, "/simpleForm"))
-      when(wsMockResponse.post(FakeRequest(POST, "/simpleForm")))
-        .thenReturn(Future[WSResponse])
 
-      status(simpleForm) mustBe OK
-      contentType(simpleForm) mustBe Some("text/html")
-      contentAsString(simpleForm) must include("forms")
+      lazy val controller = new FormController(wsMock, stubControllerComponents(), executionContext)
+      lazy val result = controller.simpleFormPost().apply(FakeRequest(POST, "/simpleForm"))
+
+      when(wsMock.url(ArgumentMatchers.any())) thenReturn wsRequest
+      when(wsResponse.status) thenReturn 200
+      when(wsResponse.json) thenReturn Json.parse(
+        """{
+          | "wheels": 4,
+          | "heavy": true,
+          | "name": "BMW"
+          |}""".stripMargin)
+      when(wsRequest.post(any[JsObject]())(any[BodyWritable[JsObject]]())) thenReturn Future.successful(wsResponse)
+
+
+      status(result) mustBe OK
+      contentType(result) mustBe Some("text/html")
+      contentAsString(result) must include("Vehicle")
+    }
+
+    "fail to render the simpleFormPost page from a new instance of controller" in {
+
+      lazy val controller = new FormController(wsMock, stubControllerComponents(), executionContext)
+      lazy val result = controller.simpleFormPost().apply(FakeRequest(POST, "/simpleForm"))
+
+      when(wsMock.url(ArgumentMatchers.any())) thenReturn wsRequest
+      when(wsResponse.status) thenReturn 404
+      when(wsResponse.json) thenReturn Json.parse(
+        """{
+          | "wheels": 4,
+          | "heavy": true,
+          | "name": "BMW"
+          |}""".stripMargin)
+
+      when(wsRequest.post(any[JsObject]())(any[BodyWritable[JsObject]]())) thenReturn Future.failed(new Exception)
+
+
+      status(result) mustBe NOT_FOUND
+
     }
 
   }

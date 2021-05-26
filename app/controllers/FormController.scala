@@ -35,14 +35,11 @@ class FormController  @Inject()(ws: WSClient,cc: ControllerComponents, implicit 
     futureResponse.map {
       response =>
         val js = Json.fromJson[Vehicle](response.json)
-        println("js: " + js)
         val veh = js.get
-        println("veh: " + veh)
         Ok(views.html.vehicle(veh))
     }recover {
 
       case e =>
-        println("e: " + e.printStackTrace())
         NotFound
     }
 
