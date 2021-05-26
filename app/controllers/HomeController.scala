@@ -3,16 +3,12 @@ package controllers
 import models.Vehicle
 
 import javax.inject._
-import play.api._
-import play.api.libs.json.{JsResult, Json}
-import play.api.libs.json._
+import play.api.libs.json.{ Json}
 import play.api.mvc._
 import play.api.libs.ws._
-
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{Await, ExecutionContext, Future}
-import scala.runtime.Nothing$
-import scala.util.{Failure, Success}
+import scala.concurrent.{ ExecutionContext}
+
 
 
 /**

@@ -8,7 +8,7 @@ GET     /                        controllers.HomeController.index()
 GET     /vehicle/:vehicleName    controllers.HomeController.vehicle(vehicleName)
 + nocsrf
 POST    /simpleForm                 controllers.FormController.simpleFormPost
-GET     /simpleForm                 controllers.FormController.simpleForm
+GET     /simpleForm                 controllers.FormController.simpleForm()
 
 
 

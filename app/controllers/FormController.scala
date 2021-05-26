@@ -7,13 +7,13 @@ import play.api.libs.json.{JsObject, Json}
 import play.api.libs.ws
 import play.api.libs.ws._
 import play.api.libs.ws.WSResponse
-import play.api.mvc.{AbstractController, AnyContent, ControllerComponents, MessagesAbstractController, MessagesControllerComponents, Request}
+import play.api.mvc.{AbstractController, AnyContent, ControllerComponents, Request}
 
 import javax.inject._
 import scala.concurrent.{Await, ExecutionContext, Future}
 
 @Singleton
-class FormController  @Inject()(ws: WSClient,cc: MessagesControllerComponents, implicit val ec: ExecutionContext) extends MessagesAbstractController(cc) with play.api.i18n.I18nSupport{
+class FormController  @Inject()(ws: WSClient,cc: ControllerComponents, implicit val ec: ExecutionContext) extends AbstractController(cc) with play.api.i18n.I18nSupport{
 
   def simpleForm() = Action {  implicit request: Request[AnyContent] =>
     Ok(views.html.form(BasicForm.form))
@@ -27,7 +27,7 @@ class FormController  @Inject()(ws: WSClient,cc: MessagesControllerComponents, i
     }.getOrElse(Ok("Error"))
 
     val dataToBeSend = Json.obj(
-      "Vehicle Name" -> s"${vehicleName}"
+      "Vehicle Name" -> s"$vehicleName"
     )
 
     val futureResponse: Future[WSResponse] = ws.url("http://localhost:9001/form").post(dataToBeSend)
@@ -35,10 +35,15 @@ class FormController  @Inject()(ws: WSClient,cc: MessagesControllerComponents, i
     futureResponse.map {
       response =>
         val js = Json.fromJson[Vehicle](response.json)
+        println("js: " + js)
         val veh = js.get
+        println("veh: " + veh)
         Ok(views.html.vehicle(veh))
     }recover {
-      case _ => NotFound
+
+      case e =>
+        println("e: " + e.printStackTrace())
+        NotFound
     }
 
   }

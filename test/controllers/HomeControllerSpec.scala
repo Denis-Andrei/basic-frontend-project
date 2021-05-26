@@ -58,7 +58,7 @@ class HomeControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting
 
       status(vehicle) mustBe OK
       contentType(vehicle) mustBe Some("text/html")
-      contentAsString(vehicle) must include ("Welcome to Vehicle")
+      contentAsString(vehicle) must include ("Vehicle")
     }
 
     "fail to render the vehicle page from the application" in {
